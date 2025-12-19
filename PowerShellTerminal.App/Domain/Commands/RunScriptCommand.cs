@@ -1,5 +1,6 @@
 using PowerShellTerminal.App.Domain.Interfaces;
 using PowerShellTerminal.App.Domain.Bridge;
+using PowerShellTerminal.App.Domain.Interpreter;
 
 namespace PowerShellTerminal.App.Domain.Commands
 {
@@ -18,7 +19,11 @@ namespace PowerShellTerminal.App.Domain.Commands
 
         public void Execute()
         {
-            _lastOutput = _system.RunCommand(_script);
+            var parser = new ExpressionParser(_system);
+            IExpression expressionTree = parser.Parse(_script);
+            var context = new InterpreterContext(string.Empty);
+            expressionTree.Interpret(context);
+            _lastOutput = context.Output;
         }
 
         public void Undo()
