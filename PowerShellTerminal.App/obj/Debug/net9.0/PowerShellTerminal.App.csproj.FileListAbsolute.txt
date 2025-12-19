@@ -1,0 +1,14 @@
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\PowerShellTerminal.App.GeneratedMSBuildEditorConfig.editorconfig
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\PowerShellTerminal.App.AssemblyInfoInputs.cache
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\PowerShellTerminal.App.AssemblyInfo.cs
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\PowerShellTerminal.App.csproj.CoreCompileInputs.cache
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\bin\Debug\net9.0\PowerShellTerminal.App.exe
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\bin\Debug\net9.0\PowerShellTerminal.App.deps.json
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\bin\Debug\net9.0\PowerShellTerminal.App.runtimeconfig.json
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\bin\Debug\net9.0\PowerShellTerminal.App.dll
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\bin\Debug\net9.0\PowerShellTerminal.App.pdb
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\PowerShellTerminal.App.dll
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\refint\PowerShellTerminal.App.dll
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\PowerShellTerminal.App.pdb
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\PowerShellTerminal.App.genruntimeconfig.cache
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\ref\PowerShellTerminal.App.dll
