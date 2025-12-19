@@ -12,3 +12,5 @@ C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\
 C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\PowerShellTerminal.App.pdb
 C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\PowerShellTerminal.App.genruntimeconfig.cache
 C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\ref\PowerShellTerminal.App.dll
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\PowerShellTerminal.App.csproj.AssemblyReference.cache
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\PowerShellTerminal.App\obj\Debug\net9.0\PowerShellTerminal.App.sourcelink.json
