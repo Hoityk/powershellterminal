@@ -4,6 +4,8 @@ using System.Windows.Forms;
 using PowerShellTerminal.App.Data;
 using PowerShellTerminal.App.Domain.Entities;
 using PowerShellTerminal.App.UI.Forms;
+using PowerShellTerminal.App.Domain.AbstractFactory;
+using PowerShellTerminal.App.Domain.AbstractFactory.Factories;
 
 namespace PowerShellTerminal.App
 {
@@ -54,7 +56,20 @@ namespace PowerShellTerminal.App
 
             if (loginForm.ShowDialog() == DialogResult.OK && loginForm.LoggedInUser != null)
             {
-                TerminalForm terminal = new TerminalForm();
+                var user = loginForm.LoggedInUser;
+
+                ISessionFactory factory;
+
+                if (user.ProfileName.ToLower().Contains("admin"))
+                {
+                    factory = new AdminSessionFactory();
+                }
+                else
+                {
+                    factory = new UserSessionFactory();
+                }
+
+                TerminalForm terminal = new TerminalForm(factory);
                 terminal.ShowDialog();
             }
         }
