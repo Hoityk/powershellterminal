@@ -1,0 +1,15 @@
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\bin\Debug\net9.0\TerminalServer.exe
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\bin\Debug\net9.0\TerminalServer.deps.json
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\bin\Debug\net9.0\TerminalServer.runtimeconfig.json
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\bin\Debug\net9.0\TerminalServer.dll
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\bin\Debug\net9.0\TerminalServer.pdb
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\obj\Debug\net9.0\TerminalServer.GeneratedMSBuildEditorConfig.editorconfig
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\obj\Debug\net9.0\TerminalServer.AssemblyInfoInputs.cache
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\obj\Debug\net9.0\TerminalServer.AssemblyInfo.cs
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\obj\Debug\net9.0\TerminalServer.csproj.CoreCompileInputs.cache
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\obj\Debug\net9.0\TerminalServer.sourcelink.json
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\obj\Debug\net9.0\TerminalServer.dll
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\obj\Debug\net9.0\refint\TerminalServer.dll
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\obj\Debug\net9.0\TerminalServer.pdb
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\obj\Debug\net9.0\TerminalServer.genruntimeconfig.cache
+C:\КПІ\Ворк\Misha\ТРПЗ\PowerShellTerminal\TerminalServer\obj\Debug\net9.0\ref\TerminalServer.dll

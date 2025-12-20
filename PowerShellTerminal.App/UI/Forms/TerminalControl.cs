@@ -112,10 +112,19 @@ namespace PowerShellTerminal.App.UI.Controls
         private void OnSwitchEngineClick(object? sender, EventArgs e)
         {
             string current = _terminalSystem.GetCurrentEngineName();
+
             if (current.Contains("PowerShell"))
+            {
                 _terminalSystem.SetEngine(new CmdEngine());
+            }
+            else if (current.Contains("CMD"))
+            {
+                _terminalSystem.SetEngine(new RemoteEngine());
+            }
             else
+            {
                 _terminalSystem.SetEngine(new PowerShellEngine());
+            }
 
             _btnSwitchEngine.Text = $"Engine: {_terminalSystem.GetCurrentEngineName()}";
             _txtInput.Focus();
