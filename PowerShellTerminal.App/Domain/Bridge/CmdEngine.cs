@@ -10,7 +10,6 @@ namespace PowerShellTerminal.App.Domain.Bridge
 
         public string Execute(string command)
         {
-            // Просто запускаємо cmd, не чіпаючи chcp
             return RunProcess("cmd.exe", command);
         }
 
@@ -21,9 +20,6 @@ namespace PowerShellTerminal.App.Domain.Bridge
                 ProcessStartInfo psi = new ProcessStartInfo();
                 psi.FileName = fileName;
 
-                // ВИПРАВЛЕННЯ:
-                // 1. Прибираємо "chcp 65001".
-                // 2. "/C" виконує команду і закривається.
                 psi.Arguments = $"/C {commandText}";
 
                 psi.RedirectStandardOutput = true;
@@ -31,9 +27,7 @@ namespace PowerShellTerminal.App.Domain.Bridge
                 psi.UseShellExecute = false;
                 psi.CreateNoWindow = true;
 
-                // ВИПРАВЛЕННЯ:
-                // Читаємо у "рідному" кодуванні Windows CMD (CP 866 - Кирилиця DOS)
-                // Завдяки тому, що ти додав RegisterProvider у Program.cs, це спрацює.
+
                 psi.StandardOutputEncoding = Encoding.GetEncoding(866);
                 psi.StandardErrorEncoding = Encoding.GetEncoding(866);
 
@@ -43,7 +37,6 @@ namespace PowerShellTerminal.App.Domain.Bridge
                     string error = process.StandardError.ReadToEnd();
                     process.WaitForExit();
 
-                    // Якщо є помилка, повертаємо її
                     if (!string.IsNullOrEmpty(error)) return $"[CMD Error] {error}";
                     
                     return output;
