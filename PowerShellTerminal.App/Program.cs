@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using PowerShellTerminal.App.Data;
 using PowerShellTerminal.App.Domain.Entities;
@@ -14,7 +15,9 @@ namespace PowerShellTerminal.App
         [STAThread]
         static void Main(string[] args)
         {
-            System.Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            Console.OutputEncoding = Encoding.UTF8;
+
             using (var db = new AppDbContext())
             {
                 db.Database.EnsureCreated();
@@ -22,29 +25,20 @@ namespace PowerShellTerminal.App
                 if (!db.Themes.Any())
                 {
                     db.Themes.AddRange(
-                        new Theme
-                        {
-                            ThemeId = 1,
-                            ThemeName = "Dark Matrix",
-                            BackgroundColor = "#000000",
-                            ForegroundColor = "#00FF00",
-                            CursorColor = "#00FF00"
+                        new Theme 
+                        { 
+                            ThemeId = 1, ThemeName = "Dark Matrix", 
+                            BackgroundColor = "#000000", ForegroundColor = "#00FF00", CursorColor = "#00FF00" 
                         },
-                        new Theme
-                        {
-                            ThemeId = 2,
-                            ThemeName = "PowerShell Blue",
-                            BackgroundColor = "#012456",
-                            ForegroundColor = "#FFFFFF",
-                            CursorColor = "#FFFFFF"
+                        new Theme 
+                        { 
+                            ThemeId = 2, ThemeName = "PowerShell Blue", 
+                            BackgroundColor = "#012456", ForegroundColor = "#FFFFFF", CursorColor = "#FFFFFF" 
                         },
-                        new Theme
-                        {
-                            ThemeId = 3,
-                            ThemeName = "Ubuntu Purple",
-                            BackgroundColor = "#300A24",
-                            ForegroundColor = "#DD4814",
-                            CursorColor = "#FFFFFF"
+                        new Theme 
+                        { 
+                            ThemeId = 3, ThemeName = "Ubuntu Purple", 
+                            BackgroundColor = "#300A24", ForegroundColor = "#DD4814", CursorColor = "#FFFFFF" 
                         }
                     );
                     db.SaveChanges();
@@ -58,7 +52,6 @@ namespace PowerShellTerminal.App
             if (loginForm.ShowDialog() == DialogResult.OK && loginForm.LoggedInUser != null)
             {
                 var user = loginForm.LoggedInUser;
-
                 ISessionFactory factory;
 
                 if (user.ProfileName.ToLower().Contains("admin"))

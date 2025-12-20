@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System;
+using System.Text;
 
 namespace PowerShellTerminal.App.Domain.Bridge
 {
@@ -9,25 +10,27 @@ namespace PowerShellTerminal.App.Domain.Bridge
 
         public string Execute(string command)
         {
-            return RunProcess("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -Command \"{command}\"");
+            return RunProcess("powershell.exe", command);
         }
 
-        private string RunProcess(string fileName, string args)
+        private string RunProcess(string fileName, string commandText)
         {
             try
             {
                 ProcessStartInfo psi = new ProcessStartInfo();
                 psi.FileName = fileName;
 
-                // Додаємо команду для зміни кодування в PowerShell
-                psi.Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {args.Replace("-Command \"", "")}";
+                string psCommand = $"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {commandText}";
+                
+                psi.Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"{psCommand}\"";
 
                 psi.RedirectStandardOutput = true;
                 psi.RedirectStandardError = true;
                 psi.UseShellExecute = false;
                 psi.CreateNoWindow = true;
-                psi.StandardOutputEncoding = System.Text.Encoding.UTF8;
-                psi.StandardErrorEncoding = System.Text.Encoding.UTF8;
+                
+                psi.StandardOutputEncoding = Encoding.UTF8;
+                psi.StandardErrorEncoding = Encoding.UTF8;
 
                 using (Process process = Process.Start(psi))
                 {

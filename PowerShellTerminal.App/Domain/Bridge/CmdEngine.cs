@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System;
+using System.Text;
 
 namespace PowerShellTerminal.App.Domain.Bridge
 {
@@ -9,22 +10,32 @@ namespace PowerShellTerminal.App.Domain.Bridge
 
         public string Execute(string command)
         {
-            return RunProcess("cmd.exe", $"/C {command}");
+            // Просто запускаємо cmd, не чіпаючи chcp
+            return RunProcess("cmd.exe", command);
         }
 
-        private string RunProcess(string fileName, string args)
+        private string RunProcess(string fileName, string commandText)
         {
             try
             {
                 ProcessStartInfo psi = new ProcessStartInfo();
                 psi.FileName = fileName;
-                psi.Arguments = args;
+
+                // ВИПРАВЛЕННЯ:
+                // 1. Прибираємо "chcp 65001".
+                // 2. "/C" виконує команду і закривається.
+                psi.Arguments = $"/C {commandText}";
+
                 psi.RedirectStandardOutput = true;
                 psi.RedirectStandardError = true;
                 psi.UseShellExecute = false;
                 psi.CreateNoWindow = true;
-                psi.StandardOutputEncoding = System.Text.Encoding.UTF8;
-                psi.StandardErrorEncoding = System.Text.Encoding.UTF8;
+
+                // ВИПРАВЛЕННЯ:
+                // Читаємо у "рідному" кодуванні Windows CMD (CP 866 - Кирилиця DOS)
+                // Завдяки тому, що ти додав RegisterProvider у Program.cs, це спрацює.
+                psi.StandardOutputEncoding = Encoding.GetEncoding(866);
+                psi.StandardErrorEncoding = Encoding.GetEncoding(866);
 
                 using (Process process = Process.Start(psi))
                 {
@@ -32,7 +43,9 @@ namespace PowerShellTerminal.App.Domain.Bridge
                     string error = process.StandardError.ReadToEnd();
                     process.WaitForExit();
 
+                    // Якщо є помилка, повертаємо її
                     if (!string.IsNullOrEmpty(error)) return $"[CMD Error] {error}";
+                    
                     return output;
                 }
             }

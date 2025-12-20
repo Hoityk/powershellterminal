@@ -41,9 +41,10 @@ namespace PowerShellTerminal.App.UI.Controls
             topBar.BackColor = Color.FromArgb(30, 30, 30);
 
             _btnSwitchEngine = new Button();
-            _btnSwitchEngine.Text = $"Engine: PS";
+            _btnSwitchEngine.Text = $"Engine: {_terminalSystem.GetCurrentEngineName()}";
             _btnSwitchEngine.Dock = DockStyle.Right;
-            _btnSwitchEngine.Width = 120;
+            _btnSwitchEngine.AutoSize = true;
+            _btnSwitchEngine.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             _btnSwitchEngine.FlatStyle = FlatStyle.Flat;
             _btnSwitchEngine.ForeColor = Color.White;
             _btnSwitchEngine.Font = new Font("Consolas", 8);
