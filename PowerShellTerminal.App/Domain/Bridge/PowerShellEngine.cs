@@ -18,11 +18,16 @@ namespace PowerShellTerminal.App.Domain.Bridge
             {
                 ProcessStartInfo psi = new ProcessStartInfo();
                 psi.FileName = fileName;
-                psi.Arguments = args;
+
+                // Додаємо команду для зміни кодування в PowerShell
+                psi.Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {args.Replace("-Command \"", "")}";
+
                 psi.RedirectStandardOutput = true;
                 psi.RedirectStandardError = true;
                 psi.UseShellExecute = false;
                 psi.CreateNoWindow = true;
+                psi.StandardOutputEncoding = System.Text.Encoding.UTF8;
+                psi.StandardErrorEncoding = System.Text.Encoding.UTF8;
 
                 using (Process process = Process.Start(psi))
                 {

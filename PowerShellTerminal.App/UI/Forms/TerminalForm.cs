@@ -6,6 +6,9 @@ using PowerShellTerminal.App.Domain.Invokers;
 using PowerShellTerminal.App.Domain.Interfaces;
 using PowerShellTerminal.App.Domain.AbstractFactory;
 using PowerShellTerminal.App.Domain.Bridge;
+using PowerShellTerminal.App.Domain.Entities;
+using PowerShellTerminal.App.Domain.Context;
+using PowerShellTerminal.App.Domain.Strategies;
 
 namespace PowerShellTerminal.App.UI.Forms
 {
@@ -16,61 +19,71 @@ namespace PowerShellTerminal.App.UI.Forms
         private Label _lblPrompt;
         private Panel _bottomPanel;
         private Button _btnSwitchEngine;
+        private Button _btnSettings;
 
         private CommandInvoker _invoker;
         private TerminalSystem _terminalSystem;
         private string _promptStr;
-        private Color _themeColor;
+        private UserProfile _currentUser;
 
-        public TerminalForm(ISessionFactory factory)
+        public TerminalForm(ISessionFactory factory, UserProfile user)
         {
+            _currentUser = user;
+
             IPrompt prompt = factory.CreatePrompt();
             IHeader header = factory.CreateHeader();
             _promptStr = prompt.GetText();
-            _themeColor = ColorTranslator.FromHtml(prompt.GetColorHex());
 
             this.Text = header.GetTitle();
             this.Size = new Size(900, 600);
-            this.BackColor = Color.Black;
 
             _invoker = new CommandInvoker();
             _terminalSystem = new TerminalSystem(new PowerShellEngine());
 
+            Panel topPanel = new Panel();
+            topPanel.Dock = DockStyle.Top;
+            topPanel.Height = 30;
+            topPanel.BackColor = Color.FromArgb(40, 40, 40);
+
             _btnSwitchEngine = new Button();
-            _btnSwitchEngine.Text = $"Engine: {_terminalSystem.GetCurrentEngineName()}";
-            _btnSwitchEngine.Dock = DockStyle.Top;
-            _btnSwitchEngine.Height = 30;
-            _btnSwitchEngine.BackColor = Color.FromArgb(50, 50, 50);
-            _btnSwitchEngine.ForeColor = Color.White;
+            _btnSwitchEngine.Text = $"Engine: PS";
+            _btnSwitchEngine.Dock = DockStyle.Left;
+            _btnSwitchEngine.Width = 150;
             _btnSwitchEngine.FlatStyle = FlatStyle.Flat;
+            _btnSwitchEngine.ForeColor = Color.White;
             _btnSwitchEngine.Click += OnSwitchEngineClick;
+
+            _btnSettings = new Button();
+            _btnSettings.Text = "⚙ Settings (Strategy)";
+            _btnSettings.Dock = DockStyle.Right;
+            _btnSettings.Width = 150;
+            _btnSettings.FlatStyle = FlatStyle.Flat;
+            _btnSettings.ForeColor = Color.White;
+            _btnSettings.Click += OnSettingsClick;
+
+            topPanel.Controls.Add(_btnSwitchEngine);
+            topPanel.Controls.Add(_btnSettings);
 
             _rtbOutput = new RichTextBox();
             _rtbOutput.Dock = DockStyle.Fill;
-            _rtbOutput.BackColor = Color.Black;
-            _rtbOutput.ForeColor = Color.LightGray;
+            _rtbOutput.BorderStyle = BorderStyle.None;
             _rtbOutput.Font = new Font("Consolas", 12);
             _rtbOutput.ReadOnly = true;
-            _rtbOutput.BorderStyle = BorderStyle.None;
             _rtbOutput.Text = $"{header.GetWelcomeMessage()}\n----------------------------\n";
 
             _bottomPanel = new Panel();
             _bottomPanel.Dock = DockStyle.Bottom;
             _bottomPanel.Height = 30;
-            _bottomPanel.BackColor = Color.Black;
             _bottomPanel.Padding = new Padding(5);
 
             _lblPrompt = new Label();
             _lblPrompt.Text = _promptStr;
-            _lblPrompt.ForeColor = _themeColor;
             _lblPrompt.Font = new Font("Consolas", 12, FontStyle.Bold);
             _lblPrompt.AutoSize = true;
             _lblPrompt.Dock = DockStyle.Left;
             _lblPrompt.TextAlign = ContentAlignment.MiddleLeft;
 
             _txtInput = new TextBox();
-            _txtInput.BackColor = Color.Black;
-            _txtInput.ForeColor = _themeColor;
             _txtInput.Font = new Font("Consolas", 12);
             _txtInput.BorderStyle = BorderStyle.None;
             _txtInput.Dock = DockStyle.Fill;
@@ -81,23 +94,50 @@ namespace PowerShellTerminal.App.UI.Forms
 
             this.Controls.Add(_rtbOutput);
             this.Controls.Add(_bottomPanel);
-            this.Controls.Add(_btnSwitchEngine);
+            this.Controls.Add(topPanel);
+
+            ApplyThemeStrategy();
 
             this.Shown += (s, e) => _txtInput.Focus();
+        }
+
+        private void OnSettingsClick(object? sender, EventArgs e)
+        {
+            SettingsForm settings = new SettingsForm(_currentUser);
+            settings.ShowDialog();
+            ApplyThemeStrategy();
+        }
+
+        private void ApplyThemeStrategy()
+        {
+            IThemeStrategy strategy = new MatrixThemeStrategy();
+
+            switch (_currentUser.ThemeId)
+            {
+                case 1: strategy = new MatrixThemeStrategy(); break;
+                case 2: strategy = new PowerShellBlueThemeStrategy(); break;
+                case 3: strategy = new UbuntuThemeStrategy(); break;
+            }
+
+            ThemeContext context = new ThemeContext();
+            context.SetStrategy(strategy);
+            context.ApplyTheme(this);
+
+            _rtbOutput.BackColor = this.BackColor;
+            _rtbOutput.ForeColor = this.ForeColor;
+
+            _bottomPanel.BackColor = this.BackColor;
+            _txtInput.BackColor = this.BackColor;
+            _txtInput.ForeColor = this.ForeColor;
         }
 
         private void OnSwitchEngineClick(object? sender, EventArgs e)
         {
             string current = _terminalSystem.GetCurrentEngineName();
-
             if (current.Contains("PowerShell"))
-            {
                 _terminalSystem.SetEngine(new CmdEngine());
-            }
             else
-            {
                 _terminalSystem.SetEngine(new PowerShellEngine());
-            }
 
             _btnSwitchEngine.Text = $"Engine: {_terminalSystem.GetCurrentEngineName()}";
             _txtInput.Focus();

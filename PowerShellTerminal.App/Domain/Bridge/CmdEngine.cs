@@ -23,7 +23,8 @@ namespace PowerShellTerminal.App.Domain.Bridge
                 psi.RedirectStandardError = true;
                 psi.UseShellExecute = false;
                 psi.CreateNoWindow = true;
-                psi.StandardOutputEncoding = System.Text.Encoding.UTF8; 
+                psi.StandardOutputEncoding = System.Text.Encoding.UTF8;
+                psi.StandardErrorEncoding = System.Text.Encoding.UTF8;
 
                 using (Process process = Process.Start(psi))
                 {

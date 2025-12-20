@@ -14,6 +14,7 @@ namespace PowerShellTerminal.App
         [STAThread]
         static void Main(string[] args)
         {
+            System.Console.OutputEncoding = System.Text.Encoding.UTF8;
             using (var db = new AppDbContext())
             {
                 db.Database.EnsureCreated();
@@ -69,7 +70,7 @@ namespace PowerShellTerminal.App
                     factory = new UserSessionFactory();
                 }
 
-                TerminalForm terminal = new TerminalForm(factory);
+                TerminalForm terminal = new TerminalForm(factory, user);
                 terminal.ShowDialog();
             }
         }
