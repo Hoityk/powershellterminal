@@ -25,20 +25,27 @@ namespace PowerShellTerminal.App
                 if (!db.Themes.Any())
                 {
                     db.Themes.AddRange(
-                        new Theme 
-                        { 
-                            ThemeId = 1, ThemeName = "Dark Matrix", 
-                            BackgroundColor = "#000000", ForegroundColor = "#00FF00", CursorColor = "#00FF00" 
+                        new Theme { ThemeId = 1, ThemeName = "Dark Matrix", BackgroundColor = "#000000", ForegroundColor = "#00FF00", CursorColor = "#00FF00" },
+                        new Theme { ThemeId = 2, ThemeName = "PowerShell Blue", BackgroundColor = "#012456", ForegroundColor = "#FFFFFF", CursorColor = "#FFFFFF" },
+                        new Theme { ThemeId = 3, ThemeName = "Ubuntu Purple", BackgroundColor = "#300A24", ForegroundColor = "#DD4814", CursorColor = "#FFFFFF" }
+                    );
+                    db.SaveChanges();
+                }
+
+                if (!db.UserProfiles.Any())
+                {
+                    db.UserProfiles.AddRange(
+                        new UserProfile
+                        {
+                            ProfileName = "admin",
+                            Role = "Admin",
+                            ThemeId = 1
                         },
-                        new Theme 
-                        { 
-                            ThemeId = 2, ThemeName = "PowerShell Blue", 
-                            BackgroundColor = "#012456", ForegroundColor = "#FFFFFF", CursorColor = "#FFFFFF" 
-                        },
-                        new Theme 
-                        { 
-                            ThemeId = 3, ThemeName = "Ubuntu Purple", 
-                            BackgroundColor = "#300A24", ForegroundColor = "#DD4814", CursorColor = "#FFFFFF" 
+                        new UserProfile
+                        {
+                            ProfileName = "user",
+                            Role = "User",
+                            ThemeId = 2
                         }
                     );
                     db.SaveChanges();
@@ -54,7 +61,7 @@ namespace PowerShellTerminal.App
                 var user = loginForm.LoggedInUser;
                 ISessionFactory factory;
 
-                if (user.ProfileName.ToLower().Contains("admin"))
+                if (user.Role == "Admin")
                 {
                     factory = new AdminSessionFactory();
                 }

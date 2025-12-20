@@ -10,8 +10,8 @@ namespace PowerShellTerminal.App.Domain.Entities
         public int ProfileId { get; set; }
         
         public string ProfileName { get; set; } = string.Empty;
-        
-        public int ThemeId { get; set; }
+        public string Role { get; set; } = "User";
+        public int ThemeId { get; set; } = 1;
         
         public DateTime CreatedAt { get; set; }
 
