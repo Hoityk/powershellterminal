@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PowerShellTerminal.App")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+209af112850b2cabe8abd76dbfcc7590f2bbc6b9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5a99bb54e31b835f37691838034861fbaec0b02e")]
 [assembly: System.Reflection.AssemblyProductAttribute("PowerShellTerminal.App")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PowerShellTerminal.App")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

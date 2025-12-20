@@ -1,175 +1,182 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using PowerShellTerminal.App.Domain.Commands;
-using PowerShellTerminal.App.Domain.Invokers;
-using PowerShellTerminal.App.Domain.Interfaces;
-using PowerShellTerminal.App.Domain.AbstractFactory;
-using PowerShellTerminal.App.Domain.Bridge;
 using PowerShellTerminal.App.Domain.Entities;
-using PowerShellTerminal.App.Domain.Context;
-using PowerShellTerminal.App.Domain.Strategies;
+using PowerShellTerminal.App.Domain.AbstractFactory;
+using PowerShellTerminal.App.UI.Controls;
+using PowerShellTerminal.App.Data;
 
 namespace PowerShellTerminal.App.UI.Forms
 {
     public class TerminalForm : Form
     {
-        private RichTextBox _rtbOutput;
-        private TextBox _txtInput;
-        private Label _lblPrompt;
-        private Panel _bottomPanel;
-        private Button _btnSwitchEngine;
+        private TabControl _tabControl;
+        private Button _btnAddTab;
         private Button _btnSettings;
-
-        private CommandInvoker _invoker;
-        private TerminalSystem _terminalSystem;
-        private string _promptStr;
+        private ContextMenuStrip _tabContextMenu;
         private UserProfile _currentUser;
+        private ISessionFactory _factory;
 
         public TerminalForm(ISessionFactory factory, UserProfile user)
         {
             _currentUser = user;
+            _factory = factory;
 
-            IPrompt prompt = factory.CreatePrompt();
             IHeader header = factory.CreateHeader();
-            _promptStr = prompt.GetText();
-
             this.Text = header.GetTitle();
             this.Size = new Size(900, 600);
+            this.BackColor = Color.Black;
 
-            _invoker = new CommandInvoker();
-            _terminalSystem = new TerminalSystem(new PowerShellEngine());
+            _tabContextMenu = new ContextMenuStrip();
+            var closeItem = _tabContextMenu.Items.Add("Close Tab");
+            closeItem.Click += (s, e) => CloseTab(_tabControl.SelectedIndex);
 
             Panel topPanel = new Panel();
             topPanel.Dock = DockStyle.Top;
-            topPanel.Height = 30;
-            topPanel.BackColor = Color.FromArgb(40, 40, 40);
+            topPanel.Height = 35;
+            topPanel.BackColor = Color.FromArgb(45, 45, 48);
 
-            _btnSwitchEngine = new Button();
-            _btnSwitchEngine.Text = $"Engine: PS";
-            _btnSwitchEngine.Dock = DockStyle.Left;
-            _btnSwitchEngine.Width = 150;
-            _btnSwitchEngine.FlatStyle = FlatStyle.Flat;
-            _btnSwitchEngine.ForeColor = Color.White;
-            _btnSwitchEngine.Click += OnSwitchEngineClick;
+            _btnAddTab = new Button();
+            _btnAddTab.Text = " + New Tab ";
+            _btnAddTab.Dock = DockStyle.Left;
+            _btnAddTab.Width = 100;
+            _btnAddTab.FlatStyle = FlatStyle.Flat;
+            _btnAddTab.ForeColor = Color.White;
+            _btnAddTab.Click += (s, e) => AddNewTab();
 
             _btnSettings = new Button();
-            _btnSettings.Text = "⚙ Settings (Strategy)";
+            _btnSettings.Text = "⚙ Settings";
             _btnSettings.Dock = DockStyle.Right;
-            _btnSettings.Width = 150;
+            _btnSettings.Width = 100;
             _btnSettings.FlatStyle = FlatStyle.Flat;
             _btnSettings.ForeColor = Color.White;
             _btnSettings.Click += OnSettingsClick;
 
-            topPanel.Controls.Add(_btnSwitchEngine);
+            topPanel.Controls.Add(_btnAddTab);
             topPanel.Controls.Add(_btnSettings);
 
-            _rtbOutput = new RichTextBox();
-            _rtbOutput.Dock = DockStyle.Fill;
-            _rtbOutput.BorderStyle = BorderStyle.None;
-            _rtbOutput.Font = new Font("Consolas", 12);
-            _rtbOutput.ReadOnly = true;
-            _rtbOutput.Text = $"{header.GetWelcomeMessage()}\n----------------------------\n";
+            _tabControl = new TabControl();
+            _tabControl.Dock = DockStyle.Fill;
+            _tabControl.Appearance = TabAppearance.Normal;
+            _tabControl.Padding = new Point(10, 5);
+            _tabControl.MouseClick += OnTabMouseClick;
 
-            _bottomPanel = new Panel();
-            _bottomPanel.Dock = DockStyle.Bottom;
-            _bottomPanel.Height = 30;
-            _bottomPanel.Padding = new Padding(5);
-
-            _lblPrompt = new Label();
-            _lblPrompt.Text = _promptStr;
-            _lblPrompt.Font = new Font("Consolas", 12, FontStyle.Bold);
-            _lblPrompt.AutoSize = true;
-            _lblPrompt.Dock = DockStyle.Left;
-            _lblPrompt.TextAlign = ContentAlignment.MiddleLeft;
-
-            _txtInput = new TextBox();
-            _txtInput.Font = new Font("Consolas", 12);
-            _txtInput.BorderStyle = BorderStyle.None;
-            _txtInput.Dock = DockStyle.Fill;
-            _txtInput.KeyDown += OnInputKeyDown;
-
-            _bottomPanel.Controls.Add(_txtInput);
-            _bottomPanel.Controls.Add(_lblPrompt);
-
-            this.Controls.Add(_rtbOutput);
-            this.Controls.Add(_bottomPanel);
+            this.Controls.Add(_tabControl);
             this.Controls.Add(topPanel);
 
+            AddNewTab();
             ApplyThemeStrategy();
+        }
 
-            this.Shown += (s, e) => _txtInput.Focus();
+        private void OnTabMouseClick(object? sender, MouseEventArgs e)
+        {
+            for (int i = 0; i < _tabControl.TabCount; i++)
+            {
+                Rectangle r = _tabControl.GetTabRect(i);
+
+                if (r.Contains(e.Location))
+                {
+                    if (e.Button == MouseButtons.Middle)
+                    {
+                        CloseTab(i);
+                    }
+                    else if (e.Button == MouseButtons.Right)
+                    {
+                        _tabControl.SelectedIndex = i;
+                        _tabContextMenu.Show(_tabControl, e.Location);
+                    }
+                }
+            }
+        }
+
+        private void CloseTab(int index)
+        {
+            if (index < 0 || index >= _tabControl.TabCount) return;
+
+            TabPage tabToRemove = _tabControl.TabPages[index];
+
+            foreach (Control c in tabToRemove.Controls)
+            {
+                c.Dispose();
+            }
+
+            _tabControl.TabPages.RemoveAt(index);
+
+            if (_tabControl.TabCount == 0)
+            {
+                AddNewTab();
+            }
+        }
+
+        private void AddNewTab()
+        {
+            TabPage page = new TabPage($"Terminal {_tabControl.TabPages.Count + 1}");
+
+            TerminalControl terminal = new TerminalControl(_factory);
+            page.Controls.Add(terminal);
+
+            _tabControl.TabPages.Add(page);
+            _tabControl.SelectedTab = page;
+
+            ApplyThemeStrategy();
         }
 
         private void OnSettingsClick(object? sender, EventArgs e)
         {
             SettingsForm settings = new SettingsForm(_currentUser);
             settings.ShowDialog();
+
+            using (var db = new AppDbContext())
+            {
+                var updatedUser = db.UserProfiles.Find(_currentUser.ProfileId);
+                if (updatedUser != null)
+                {
+                    _currentUser = updatedUser;
+                }
+            }
+
             ApplyThemeStrategy();
         }
 
         private void ApplyThemeStrategy()
         {
-            IThemeStrategy strategy = new MatrixThemeStrategy();
+            Color bg = Color.Black;
+            Color fg = Color.White;
+            Color btn = Color.Gray;
 
             switch (_currentUser.ThemeId)
             {
-                case 1: strategy = new MatrixThemeStrategy(); break;
-                case 2: strategy = new PowerShellBlueThemeStrategy(); break;
-                case 3: strategy = new UbuntuThemeStrategy(); break;
+                case 1:
+                    bg = Color.Black;
+                    fg = Color.LimeGreen;
+                    btn = Color.FromArgb(30, 30, 30);
+                    break;
+                case 2:
+                    bg = Color.FromArgb(1, 36, 86);
+                    fg = Color.White;
+                    btn = Color.DarkBlue;
+                    break;
+                case 3:
+                    bg = Color.FromArgb(48, 10, 36);
+                    fg = Color.FromArgb(221, 72, 20);
+                    btn = Color.FromArgb(221, 72, 20);
+                    break;
             }
 
-            ThemeContext context = new ThemeContext();
-            context.SetStrategy(strategy);
-            context.ApplyTheme(this);
+            this.BackColor = bg;
+            _tabControl.BackColor = bg;
 
-            _rtbOutput.BackColor = this.BackColor;
-            _rtbOutput.ForeColor = this.ForeColor;
-
-            _bottomPanel.BackColor = this.BackColor;
-            _txtInput.BackColor = this.BackColor;
-            _txtInput.ForeColor = this.ForeColor;
-        }
-
-        private void OnSwitchEngineClick(object? sender, EventArgs e)
-        {
-            string current = _terminalSystem.GetCurrentEngineName();
-            if (current.Contains("PowerShell"))
-                _terminalSystem.SetEngine(new CmdEngine());
-            else
-                _terminalSystem.SetEngine(new PowerShellEngine());
-
-            _btnSwitchEngine.Text = $"Engine: {_terminalSystem.GetCurrentEngineName()}";
-            _txtInput.Focus();
-        }
-
-        private void OnInputKeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
+            foreach (TabPage page in _tabControl.TabPages)
             {
-                string text = _txtInput.Text;
-                if (string.IsNullOrWhiteSpace(text)) return;
-
-                ICommand cmd = new RunScriptCommand(_terminalSystem, text);
-
-                AppendText($"{_promptStr}{text}", _txtInput.ForeColor);
-                _invoker.ExecuteCommand(cmd);
-
-                string result = cmd.GetOutput();
-                AppendText(result, Color.White);
-
-                _txtInput.Clear();
-                e.SuppressKeyPress = true;
+                page.BackColor = bg;
+                foreach (Control c in page.Controls)
+                {
+                    if (c is TerminalControl term)
+                    {
+                        term.ApplyTheme(bg, fg, btn);
+                    }
+                }
             }
-        }
-
-        private void AppendText(string text, Color color)
-        {
-            _rtbOutput.SelectionStart = _rtbOutput.TextLength;
-            _rtbOutput.SelectionLength = 0;
-            _rtbOutput.SelectionColor = color;
-            _rtbOutput.AppendText(text + Environment.NewLine);
-            _rtbOutput.ScrollToCaret();
         }
     }
 }
