@@ -38,14 +38,13 @@ namespace PowerShellTerminal.App.Domain.Interpreter
             var trimmed = commandPart.Trim();
 
             if (trimmed.Equals("upper", System.StringComparison.OrdinalIgnoreCase))
-            {
                 return new ToUpperExpression();
-            }
 
             if (trimmed.Equals("history", System.StringComparison.OrdinalIgnoreCase))
-            {
                 return new HistoryExpression(_user.ProfileId);
-            }
+
+            if (trimmed.Equals("help", System.StringComparison.OrdinalIgnoreCase))
+                return new HelpExpression();
 
             return new SystemCommandExpression(_system, trimmed);
         }
