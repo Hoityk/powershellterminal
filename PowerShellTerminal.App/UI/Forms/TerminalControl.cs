@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Linq;
 using PowerShellTerminal.App.Domain.Core;
 using PowerShellTerminal.App.Domain.Commands;
 using PowerShellTerminal.App.Domain.Invokers;
@@ -25,6 +26,8 @@ namespace PowerShellTerminal.App.UI.Controls
         private string _promptStr;
         private UserProfile _currentUser;
         private HistoryRepository _historyRepository;
+        private List<string> _localHistory = new List<string>();
+        private int _historyIndex = 0;
 
         public TerminalControl(ISessionFactory factory, UserProfile user)
         {
@@ -96,6 +99,28 @@ namespace PowerShellTerminal.App.UI.Controls
             this.Controls.Add(_bottomPanel);
             this.Controls.Add(topBar);
 
+            var dbHistory = _historyRepository.GetAll()
+                .Where(x => x.ProfileId == _currentUser.ProfileId)
+                .OrderBy(x => x.ExecutedAt)
+                .Select(x => x.CommandText)
+                .ToList();
+
+            _localHistory.AddRange(dbHistory);
+            _historyIndex = _localHistory.Count;
+
+            _txtInput.Focus();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            _txtInput.Select();
+            this.ActiveControl = _txtInput;
+        }
+
+        protected override void OnEnter(EventArgs e)
+        {
+            base.OnEnter(e);
             _txtInput.Focus();
         }
 
@@ -134,10 +159,44 @@ namespace PowerShellTerminal.App.UI.Controls
 
         private void OnInputKeyDown(object? sender, KeyEventArgs e)
         {
+            if (e.KeyCode == Keys.Up)
+            {
+                if (_historyIndex > 0)
+                {
+                    _historyIndex--;
+                    _txtInput.Text = _localHistory[_historyIndex];
+                    _txtInput.SelectionStart = _txtInput.Text.Length;
+                }
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                return;
+            }
+
+            if (e.KeyCode == Keys.Down)
+            {
+                if (_historyIndex < _localHistory.Count - 1)
+                {
+                    _historyIndex++;
+                    _txtInput.Text = _localHistory[_historyIndex];
+                    _txtInput.SelectionStart = _txtInput.Text.Length;
+                }
+                else
+                {
+                    _historyIndex = _localHistory.Count;
+                    _txtInput.Clear();
+                }
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                return;
+            }
+
             if (e.KeyCode == Keys.Enter)
             {
                 string text = _txtInput.Text;
                 if (string.IsNullOrWhiteSpace(text)) return;
+
+                _localHistory.Add(text);
+                _historyIndex = _localHistory.Count;
 
                 ICommand cmd = new RunScriptCommand(_terminalSystem, text, _currentUser);
 
