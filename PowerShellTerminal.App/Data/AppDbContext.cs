@@ -6,7 +6,8 @@ namespace PowerShellTerminal.App.Data
     public class AppDbContext : DbContext
     {
         public DbSet<UserProfile> UserProfiles { get; set; }
-        public DbSet<Theme> Themes { get; set; } // <--- ДОДАЙ ЦЕЙ РЯДОК
+        public DbSet<Theme> Themes { get; set; }
+        public DbSet<CommandHistoryItem> CommandHistoryItems { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
             => options.UseSqlite("Data Source=terminal.db");

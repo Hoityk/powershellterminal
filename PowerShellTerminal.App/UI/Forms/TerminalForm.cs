@@ -112,7 +112,8 @@ namespace PowerShellTerminal.App.UI.Forms
         {
             TabPage page = new TabPage($"Terminal {_tabControl.TabPages.Count + 1}");
 
-            TerminalControl terminal = new TerminalControl(_factory);
+            TerminalControl terminal = new TerminalControl(_factory, _currentUser);
+
             page.Controls.Add(terminal);
 
             _tabControl.TabPages.Add(page);

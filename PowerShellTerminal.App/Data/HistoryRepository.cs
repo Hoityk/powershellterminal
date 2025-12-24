@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using PowerShellTerminal.App.Domain.Entities;
 using PowerShellTerminal.App.Domain.Interfaces;
 
@@ -6,30 +7,42 @@ namespace PowerShellTerminal.App.Data
 {
     public class HistoryRepository : IRepository<CommandHistoryItem>
     {
-        private readonly List<CommandHistoryItem> _memoryDb = new List<CommandHistoryItem>();
-
         public void Add(CommandHistoryItem entity)
         {
-            _memoryDb.Add(entity);
+            using (var db = new AppDbContext())
+            {
+                db.CommandHistoryItems.Add(entity);
+                db.SaveChanges();
+            }
         }
 
         public void Delete(int id)
         {
-            var item = GetById(id);
-            if (item != null)
+            using (var db = new AppDbContext())
             {
-                _memoryDb.Remove(item);
+                var item = db.CommandHistoryItems.Find(id);
+                if (item != null)
+                {
+                    db.CommandHistoryItems.Remove(item);
+                    db.SaveChanges();
+                }
             }
         }
 
         public IEnumerable<CommandHistoryItem> GetAll()
         {
-            return _memoryDb;
+            using (var db = new AppDbContext())
+            {
+                return db.CommandHistoryItems.ToList();
+            }
         }
 
         public CommandHistoryItem? GetById(int id)
         {
-            return _memoryDb.Find(x => x.HistoryId == id);
+            using (var db = new AppDbContext())
+            {
+                return db.CommandHistoryItems.Find(id);
+            }
         }
     }
 }

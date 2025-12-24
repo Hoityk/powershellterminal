@@ -1,23 +1,26 @@
 using System.Linq;
 using PowerShellTerminal.App.Domain.Bridge;
 using PowerShellTerminal.App.Domain.Interpreter.Expressions;
+using PowerShellTerminal.App.Domain.Entities;
 
 namespace PowerShellTerminal.App.Domain.Interpreter
 {
     public class ExpressionParser
     {
         private readonly TerminalSystem _system;
+        private readonly UserProfile _user;
 
-        public ExpressionParser(TerminalSystem system)
+        public ExpressionParser(TerminalSystem system, UserProfile user)
         {
             _system = system;
+            _user = user;
         }
 
         public IExpression Parse(string commandLine)
         {
             if (commandLine.Contains("|"))
             {
-                var parts = commandLine.Split('|', 2); 
+                var parts = commandLine.Split('|', 2);
                 var leftStr = parts[0];
                 var rightStr = parts[1];
 
@@ -26,7 +29,7 @@ namespace PowerShellTerminal.App.Domain.Interpreter
 
                 return new PipeExpression(leftExpr, rightExpr);
             }
-            
+
             return ParseTerminal(commandLine);
         }
 
@@ -37,6 +40,11 @@ namespace PowerShellTerminal.App.Domain.Interpreter
             if (trimmed.Equals("upper", System.StringComparison.OrdinalIgnoreCase))
             {
                 return new ToUpperExpression();
+            }
+
+            if (trimmed.Equals("history", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return new HistoryExpression(_user.ProfileId);
             }
 
             return new SystemCommandExpression(_system, trimmed);

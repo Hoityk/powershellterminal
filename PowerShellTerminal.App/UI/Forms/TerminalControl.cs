@@ -8,6 +8,8 @@ using PowerShellTerminal.App.Domain.Interfaces;
 using PowerShellTerminal.App.Domain.AbstractFactory;
 using PowerShellTerminal.App.Domain.Bridge;
 using PowerShellTerminal.App.Domain.Interpreter;
+using PowerShellTerminal.App.Data;
+using PowerShellTerminal.App.Domain.Entities;
 
 namespace PowerShellTerminal.App.UI.Controls
 {
@@ -18,13 +20,17 @@ namespace PowerShellTerminal.App.UI.Controls
         private Label _lblPrompt;
         private Panel _bottomPanel;
         private Button _btnSwitchEngine;
-
         private CommandInvoker _invoker;
         private TerminalSystem _terminalSystem;
         private string _promptStr;
+        private UserProfile _currentUser;
+        private HistoryRepository _historyRepository;
 
-        public TerminalControl(ISessionFactory factory)
+        public TerminalControl(ISessionFactory factory, UserProfile user)
         {
+            _currentUser = user;
+            _historyRepository = new HistoryRepository();
+
             this.Dock = DockStyle.Fill;
             this.BackColor = Color.Black;
 
@@ -96,16 +102,12 @@ namespace PowerShellTerminal.App.UI.Controls
         public void ApplyTheme(Color bg, Color fg, Color buttonBg)
         {
             this.BackColor = bg;
-
             _bottomPanel.BackColor = bg;
-
             _txtInput.BackColor = bg;
             _txtInput.ForeColor = fg;
             _lblPrompt.ForeColor = fg;
-
             _rtbOutput.BackColor = bg;
             _rtbOutput.ForeColor = fg;
-
             _btnSwitchEngine.BackColor = buttonBg;
         }
 
@@ -137,15 +139,23 @@ namespace PowerShellTerminal.App.UI.Controls
                 string text = _txtInput.Text;
                 if (string.IsNullOrWhiteSpace(text)) return;
 
-                var parser = new ExpressionParser(_terminalSystem);
-
-                ICommand cmd = new RunScriptCommand(_terminalSystem, text);
+                ICommand cmd = new RunScriptCommand(_terminalSystem, text, _currentUser);
 
                 AppendText($"{_promptStr}{text}", _txtInput.ForeColor);
                 _invoker.ExecuteCommand(cmd);
 
                 string result = cmd.GetOutput();
                 AppendText(result, _rtbOutput.ForeColor);
+
+                var historyItem = new CommandHistoryItem
+                {
+                    CommandText = text,
+                    ExecutedAt = DateTime.Now,
+                    IsSuccess = !result.Contains("Error"),
+                    ProfileId = _currentUser.ProfileId
+                };
+
+                _historyRepository.Add(historyItem);
 
                 _txtInput.Clear();
                 e.SuppressKeyPress = true;

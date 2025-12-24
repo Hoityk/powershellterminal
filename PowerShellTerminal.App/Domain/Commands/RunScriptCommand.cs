@@ -1,6 +1,7 @@
 using PowerShellTerminal.App.Domain.Interfaces;
 using PowerShellTerminal.App.Domain.Bridge;
 using PowerShellTerminal.App.Domain.Interpreter;
+using PowerShellTerminal.App.Domain.Entities;
 
 namespace PowerShellTerminal.App.Domain.Commands
 {
@@ -8,18 +9,21 @@ namespace PowerShellTerminal.App.Domain.Commands
     {
         private readonly TerminalSystem _system;
         private readonly string _script;
+        private readonly UserProfile _user;
         private string _lastOutput;
 
-        public RunScriptCommand(TerminalSystem system, string script)
+        public RunScriptCommand(TerminalSystem system, string script, UserProfile user)
         {
             _system = system;
             _script = script;
+            _user = user;
             _lastOutput = string.Empty;
         }
 
         public void Execute()
         {
-            var parser = new ExpressionParser(_system);
+            var parser = new ExpressionParser(_system, _user);
+
             IExpression expressionTree = parser.Parse(_script);
             var context = new InterpreterContext(string.Empty);
             expressionTree.Interpret(context);
