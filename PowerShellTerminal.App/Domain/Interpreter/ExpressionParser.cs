@@ -46,6 +46,17 @@ namespace PowerShellTerminal.App.Domain.Interpreter
             if (trimmed.Equals("help", System.StringComparison.OrdinalIgnoreCase))
                 return new HelpExpression();
 
+            if (trimmed.StartsWith("cd ", System.StringComparison.OrdinalIgnoreCase))
+            {
+                string path = trimmed.Substring(3);
+                return new ChangeDirectoryExpression(_system, path);
+            }
+
+            if (trimmed.Equals("cd", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return new SystemCommandExpression(_system, "pwd");
+            }
+
             return new SystemCommandExpression(_system, trimmed);
         }
     }

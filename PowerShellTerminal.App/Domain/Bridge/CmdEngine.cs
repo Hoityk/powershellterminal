@@ -8,17 +8,18 @@ namespace PowerShellTerminal.App.Domain.Bridge
     {
         public string GetEngineName() => "Windows CMD";
 
-        public string Execute(string command)
+        public string Execute(string command, string workingDirectory)
         {
-            return RunProcess("cmd.exe", command);
+            return RunProcess("cmd.exe", command, workingDirectory);
         }
 
-        private string RunProcess(string fileName, string commandText)
+        private string RunProcess(string fileName, string commandText, string workingDir)
         {
             try
             {
                 ProcessStartInfo psi = new ProcessStartInfo();
                 psi.FileName = fileName;
+                psi.WorkingDirectory = workingDir;
 
                 psi.Arguments = $"/C {commandText}";
 
@@ -26,7 +27,6 @@ namespace PowerShellTerminal.App.Domain.Bridge
                 psi.RedirectStandardError = true;
                 psi.UseShellExecute = false;
                 psi.CreateNoWindow = true;
-
 
                 psi.StandardOutputEncoding = Encoding.GetEncoding(866);
                 psi.StandardErrorEncoding = Encoding.GetEncoding(866);
@@ -38,7 +38,7 @@ namespace PowerShellTerminal.App.Domain.Bridge
                     process.WaitForExit();
 
                     if (!string.IsNullOrEmpty(error)) return $"[CMD Error] {error}";
-                    
+
                     return output;
                 }
             }
