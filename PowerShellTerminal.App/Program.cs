@@ -7,6 +7,7 @@ using PowerShellTerminal.App.Domain.Entities;
 using PowerShellTerminal.App.UI.Forms;
 using PowerShellTerminal.App.Domain.AbstractFactory;
 using PowerShellTerminal.App.Domain.AbstractFactory.Factories;
+using Microsoft.EntityFrameworkCore;
 
 namespace PowerShellTerminal.App
 {
@@ -17,6 +18,7 @@ namespace PowerShellTerminal.App
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             Console.OutputEncoding = Encoding.UTF8;
+            Application.EnableVisualStyles();
 
             using (var db = new AppDbContext())
             {
@@ -32,36 +34,35 @@ namespace PowerShellTerminal.App
                     db.SaveChanges();
                 }
 
-                if (!db.UserProfiles.Any())
+                if (!db.UserProfiles.Any(u => u.Role == "Admin"))
                 {
-                    db.UserProfiles.AddRange(
-                        new UserProfile
-                        {
-                            ProfileName = "admin",
-                            Role = "Admin",
-                            ThemeId = 1
-                        },
-                        new UserProfile
-                        {
-                            ProfileName = "user",
-                            Role = "User",
-                            ThemeId = 2
-                        }
-                    );
-                    db.SaveChanges();
+                    db.UserProfiles.Add(new UserProfile { ProfileName = "admin", Role = "Admin", CreatedAt = DateTime.Now, ThemeId = 1 });
                 }
+
+                if (!db.UserProfiles.Any(u => u.Role == "User"))
+                {
+                    db.UserProfiles.Add(new UserProfile { ProfileName = "user", Role = "User", CreatedAt = DateTime.Now, ThemeId = 2 });
+                }
+
+                db.SaveChanges();
             }
 
-            Application.EnableVisualStyles();
+            StartupForm startup = new StartupForm();
 
-            LoginForm loginForm = new LoginForm();
-
-            if (loginForm.ShowDialog() == DialogResult.OK && loginForm.LoggedInUser != null)
+            if (startup.ShowDialog() == DialogResult.OK && startup.SelectedUser != null)
             {
-                var user = loginForm.LoggedInUser;
-                ISessionFactory factory;
+                string selectedRole = startup.SelectedUser.Role;
 
-                if (user.Role == "Admin")
+                UserProfile realUser;
+                using (var db = new AppDbContext())
+                {
+                    realUser = db.UserProfiles
+                        .Include(u => u.Theme)
+                        .First(u => u.Role == selectedRole);
+                }
+
+                ISessionFactory factory;
+                if (realUser.Role == "Admin")
                 {
                     factory = new AdminSessionFactory();
                 }
@@ -70,8 +71,8 @@ namespace PowerShellTerminal.App
                     factory = new UserSessionFactory();
                 }
 
-                TerminalForm terminal = new TerminalForm(factory, user);
-                terminal.ShowDialog();
+                TerminalForm terminal = new TerminalForm(factory, realUser);
+                Application.Run(terminal);
             }
         }
     }

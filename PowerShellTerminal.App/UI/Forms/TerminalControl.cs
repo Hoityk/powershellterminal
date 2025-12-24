@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
+using System.Text.RegularExpressions;
 using PowerShellTerminal.App.Domain.Core;
 using PowerShellTerminal.App.Domain.Commands;
 using PowerShellTerminal.App.Domain.Invokers;
@@ -17,7 +18,7 @@ namespace PowerShellTerminal.App.UI.Controls
     public class TerminalControl : UserControl
     {
         private RichTextBox _rtbOutput;
-        private TextBox _txtInput;
+        private RichTextBox _txtInput;
         private Label _lblPrompt;
         private Panel _bottomPanel;
         private Button _btnSwitchEngine;
@@ -84,13 +85,17 @@ namespace PowerShellTerminal.App.UI.Controls
             _lblPrompt.Dock = DockStyle.Left;
             _lblPrompt.TextAlign = ContentAlignment.MiddleLeft;
 
-            _txtInput = new TextBox();
+            _txtInput = new RichTextBox();
+            _txtInput.ScrollBars = RichTextBoxScrollBars.None;
+            _txtInput.DetectUrls = false;
+            _txtInput.Multiline = false;
             _txtInput.BackColor = Color.Black;
             _txtInput.ForeColor = _lblPrompt.ForeColor;
             _txtInput.Font = new Font("Consolas", 12);
             _txtInput.BorderStyle = BorderStyle.None;
             _txtInput.Dock = DockStyle.Fill;
             _txtInput.KeyDown += OnInputKeyDown;
+            _txtInput.TextChanged += OnInputTextChanged;
 
             _bottomPanel.Controls.Add(_txtInput);
             _bottomPanel.Controls.Add(_lblPrompt);
@@ -157,6 +162,41 @@ namespace PowerShellTerminal.App.UI.Controls
             _txtInput.Focus();
         }
 
+        private void OnInputTextChanged(object? sender, EventArgs e)
+        {
+            if (_txtInput.TextLength == 0) return;
+
+            int originalIndex = _txtInput.SelectionStart;
+            int originalLength = _txtInput.SelectionLength;
+
+            _txtInput.SelectAll();
+            _txtInput.SelectionColor = _currentUser.Theme != null
+                ? ColorTranslator.FromHtml(_currentUser.Theme.ForegroundColor)
+                : Color.White;
+
+            string pattern = @"\b(dir|cd|cls|echo|help|exit|if|else|return|function|git|dotnet|npm|ls|clear|pwd)\b";
+
+            Color highlightColor = Color.Gold;
+            if (_txtInput.BackColor.R < 50 && _txtInput.BackColor.G < 50)
+                highlightColor = Color.Yellow;
+            else
+                highlightColor = Color.Blue;
+
+            MatchCollection matches = Regex.Matches(_txtInput.Text, pattern, RegexOptions.IgnoreCase);
+
+            foreach (Match match in matches)
+            {
+                _txtInput.Select(match.Index, match.Length);
+                _txtInput.SelectionColor = highlightColor;
+            }
+
+            _txtInput.SelectionStart = originalIndex;
+            _txtInput.SelectionLength = originalLength;
+            _txtInput.SelectionColor = _currentUser.Theme != null
+                ? ColorTranslator.FromHtml(_currentUser.Theme.ForegroundColor)
+                : Color.White;
+        }
+
         private void OnInputKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Up)
@@ -198,13 +238,15 @@ namespace PowerShellTerminal.App.UI.Controls
                 _localHistory.Add(text);
                 _historyIndex = _localHistory.Count;
 
-                ICommand cmd = new RunScriptCommand(_terminalSystem, text, _currentUser);
+                AppendText(_promptStr, _lblPrompt.ForeColor, isCommand: false);
+                AppendText(text, _txtInput.ForeColor, isCommand: true);
+                AppendText(Environment.NewLine, _txtInput.ForeColor, isCommand: false);
 
-                AppendText($"{_promptStr}{text}", _txtInput.ForeColor);
+                ICommand cmd = new RunScriptCommand(_terminalSystem, text, _currentUser);
                 _invoker.ExecuteCommand(cmd);
 
                 string result = cmd.GetOutput();
-                AppendText(result, _rtbOutput.ForeColor);
+                AppendText(result, _rtbOutput.ForeColor, isCommand: false);
 
                 var historyItem = new CommandHistoryItem
                 {
@@ -221,13 +263,44 @@ namespace PowerShellTerminal.App.UI.Controls
             }
         }
 
-        private void AppendText(string text, Color color)
+        private void AppendText(string text, Color defaultColor, bool isCommand)
         {
             _rtbOutput.SelectionStart = _rtbOutput.TextLength;
             _rtbOutput.SelectionLength = 0;
-            _rtbOutput.SelectionColor = color;
-            _rtbOutput.AppendText(text + Environment.NewLine);
+            _rtbOutput.SelectionColor = defaultColor;
+
+            if (isCommand)
+            {
+                int startIndex = _rtbOutput.TextLength;
+                _rtbOutput.AppendText(text);
+                HighlightSyntax(startIndex, text);
+            }
+            else
+            {
+                _rtbOutput.AppendText(text);
+            }
+
             _rtbOutput.ScrollToCaret();
+        }
+
+        private void HighlightSyntax(int startIndex, string text)
+        {
+            string pattern = @"\b(dir|cd|cls|echo|help|exit|if|else|return|function|git|dotnet|npm|ls|clear|pwd)\b";
+            Color keywordColor = Color.Gold;
+
+            if (_rtbOutput.BackColor == Color.FromArgb(1, 36, 86))
+                keywordColor = Color.Cyan;
+
+            MatchCollection matches = Regex.Matches(text, pattern, RegexOptions.IgnoreCase);
+
+            foreach (Match match in matches)
+            {
+                _rtbOutput.Select(startIndex + match.Index, match.Length);
+                _rtbOutput.SelectionColor = keywordColor;
+            }
+
+            _rtbOutput.SelectionStart = _rtbOutput.TextLength;
+            _rtbOutput.SelectionColor = _rtbOutput.ForeColor;
         }
     }
 }
