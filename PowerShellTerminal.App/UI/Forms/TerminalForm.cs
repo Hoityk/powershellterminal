@@ -52,6 +52,13 @@ namespace PowerShellTerminal.App.UI.Forms
             _btnSettings.ForeColor = Color.White;
             _btnSettings.Click += OnSettingsClick;
 
+            if (_currentUser.Role != "Admin")
+            {
+                _btnSettings.Enabled = false;
+                _btnSettings.Text = "🔒 Locked";
+                _btnSettings.BackColor = Color.FromArgb(30, 30, 30);
+            }
+
             topPanel.Controls.Add(_btnAddTab);
             topPanel.Controls.Add(_btnSettings);
 
@@ -119,7 +126,6 @@ namespace PowerShellTerminal.App.UI.Forms
             _tabControl.SelectedTab = page;
 
             ApplyThemeStrategy();
-
             terminal.Focus();
         }
 

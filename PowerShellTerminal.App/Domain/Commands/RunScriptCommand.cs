@@ -1,3 +1,4 @@
+using System;
 using PowerShellTerminal.App.Domain.Interfaces;
 using PowerShellTerminal.App.Domain.Bridge;
 using PowerShellTerminal.App.Domain.Interpreter;
@@ -22,8 +23,21 @@ namespace PowerShellTerminal.App.Domain.Commands
 
         public void Execute()
         {
-            var parser = new ExpressionParser(_system, _user);
+            if (_user.Role != "Admin")
+            {
+                string[] forbiddenCommands = { "rm", "del", "remove", "format", "cmd" };
 
+                foreach (var badCmd in forbiddenCommands)
+                {
+                    if (_script.Trim().StartsWith(badCmd, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _lastOutput = $"[SECURITY ALERT] Command '{badCmd}' is restricted to Administrators only.";
+                        return;
+                    }
+                }
+            }
+
+            var parser = new ExpressionParser(_system, _user);
             IExpression expressionTree = parser.Parse(_script);
             var context = new InterpreterContext(string.Empty);
             expressionTree.Interpret(context);
